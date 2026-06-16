@@ -22,10 +22,19 @@ exports.sendBrevoEmail = async (recipientEmail, subject, htmlContent, senderEmai
   const config = {
     headers: {
       "api-key": apiKey,
+      "X-Mailin-api-key": apiKey,
       "Content-Type": "application/json"
     }
   };
 
-  const response = await axios.post("https://api.brevo.com/v3/smtp/email", payload, config);
-  return response.data;
+  try {
+    const response = await axios.post("https://api.brevo.com/v3/smtp/email", payload, config);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      const details = error.response.data || error.response.statusText;
+      throw new Error(`Brevo request failed (${error.response.status}): ${JSON.stringify(details)}`);
+    }
+    throw error;
+  }
 };
